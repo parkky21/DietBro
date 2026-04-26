@@ -1,7 +1,12 @@
+import Image from 'next/image';
+
 export default function Nav() {
   return (
     <nav>
-      <div className="logo">Diet Bro<span> Fuel</span></div>
+      <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Image src="/logo.png" alt="Diet Bro Logo" width={50} height={50} style={{ borderRadius: '4px' }} />
+        <div>Diet Bro</div>
+      </div>
       <div className="nav-badge">ur glow up era starts here 🔥</div>
     </nav>
   );
