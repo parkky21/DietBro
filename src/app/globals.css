@@ -1177,7 +1177,25 @@ textarea {
     gap: 0.5rem;
   }
 
-  .meal-edit-btn, .meal-skip-btn {
+  .meal-edit-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--gold);
+    border-color: var(--gold-dim);
+    background: rgba(var(--gold-rgb), 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .meal-edit-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .meal-skip-btn {
     padding: 0.8rem 1rem;
   }
 
