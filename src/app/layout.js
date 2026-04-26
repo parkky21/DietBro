@@ -21,7 +21,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata = {
-  title: "GRIND FUEL — no cap, this diet slaps 🔥",
+  title: "Diet Bro — no cap, this diet slaps 🔥",
   description: "Stop eating like an NPC and start fueling like a main character.",
 };
 
