@@ -100,11 +100,11 @@ export default function Step1Profile({ profile, setProfile, onNext }) {
               <input type="number" id="height" value={profile.height} onChange={handleInputChange} placeholder="e.g. 175" min="80" max="280" />
             </div>
             <div className="form-group">
-              <label>ur gender bestie</label>
+              <label>ur biological gender</label>
               <select id="sex" value={profile.sex} onChange={handleInputChange}>
                 <option value="">pick one…</option>
-                <option value="male">male 💪</option>
-                <option value="female">female 💅</option>
+                <option value="male">male</option>
+                <option value="female">female</option>
               </select>
             </div>
             <div className="form-group">
@@ -120,19 +120,19 @@ export default function Step1Profile({ profile, setProfile, onNext }) {
             <div className="form-group full">
               <label>what&apos;s the vibe / goal 🎯</label>
               <div className="goal-pills">
-                <button className={`goal-pill ${profile.goal === 'muscle gain' ? 'selected' : ''}`} onClick={() => handleGoalSelect('muscle gain')}>💪 get swole no cap</button>
-                <button className={`goal-pill ${profile.goal === 'fat loss' ? 'selected' : ''}`} onClick={() => handleGoalSelect('fat loss')}>🔥 burn it all down</button>
-                <button className={`goal-pill ${profile.goal === 'lean bulk' ? 'selected' : ''}`} onClick={() => handleGoalSelect('lean bulk')}>⚡ lean bulk szn</button>
-                <button className={`goal-pill ${profile.goal === 'body recomposition' ? 'selected' : ''}`} onClick={() => handleGoalSelect('body recomposition')}>🎯 full body reco arc</button>
-                <button className={`goal-pill ${profile.goal === 'maintain and tone' ? 'selected' : ''}`} onClick={() => handleGoalSelect('maintain and tone')}>✨ stay snatched</button>
+                <button className={`goal-pill ${profile.goal === 'muscle gain' ? 'selected' : ''}`} onClick={() => handleGoalSelect('muscle gain')}>💪 muscle gain</button>
+                <button className={`goal-pill ${profile.goal === 'fat loss' ? 'selected' : ''}`} onClick={() => handleGoalSelect('fat loss')}>🔥 fat loss</button>
+                <button className={`goal-pill ${profile.goal === 'lean bulk' ? 'selected' : ''}`} onClick={() => handleGoalSelect('lean bulk')}>⚡ lean bulk</button>
+                <button className={`goal-pill ${profile.goal === 'body recomposition' ? 'selected' : ''}`} onClick={() => handleGoalSelect('body recomposition')}>🎯 body recomposition</button>
+                <button className={`goal-pill ${profile.goal === 'maintain and tone' ? 'selected' : ''}`} onClick={() => handleGoalSelect('maintain and tone')}>✨ maintain and tone</button>
               </div>
             </div>
             <div className="form-group full">
               <label>what u eat (food preference) 🍽️</label>
               <div className="goal-pills">
-                <button className={`goal-pill ${profile.dietType === 'non-vegetarian' ? 'selected' : ''}`} onClick={() => handleDietSelect('non-vegetarian')}>🥩 full send non-veg</button>
-                <button className={`goal-pill ${profile.dietType === 'vegetarian' ? 'selected' : ''}`} onClick={() => handleDietSelect('vegetarian')}>🥦 veg gang</button>
-                <button className={`goal-pill ${profile.dietType === 'vegan' ? 'selected' : ''}`} onClick={() => handleDietSelect('vegan')}>🌱 vegan era</button>
+                <button className={`goal-pill ${profile.dietType === 'non-vegetarian' ? 'selected' : ''}`} onClick={() => handleDietSelect('non-vegetarian')}>🥩 non-veg</button>
+                <button className={`goal-pill ${profile.dietType === 'vegetarian' ? 'selected' : ''}`} onClick={() => handleDietSelect('vegetarian')}>🥦 veg</button>
+                <button className={`goal-pill ${profile.dietType === 'vegan' ? 'selected' : ''}`} onClick={() => handleDietSelect('vegan')}>🌱 vegan</button>
                 <button className={`goal-pill ${profile.dietType === 'eggetarian' ? 'selected' : ''}`} onClick={() => handleDietSelect('eggetarian')}>🥚 eggs only bro</button>
               </div>
             </div>
