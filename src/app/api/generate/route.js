@@ -4,7 +4,7 @@ export async function POST(req) {
   try {
     const profile = await req.json();
 
-    const prompt = `You are an elite fitness nutrition coach with years of experience helping gym beginners transform their physique through strategic diet engineering. A user has come to you for help.
+    const prompt = `You are an elite fitness nutrition coach helping a gym beginner transform their physique through strategic diet engineering.
 
 USER PROFILE:
 - Name: ${profile.name}
@@ -17,15 +17,17 @@ USER PROFILE:
 - Dietary Preference: ${profile.dietType}
 - Allergies/Intolerances: ${profile.allergies || 'None mentioned'}
 - Bad habits to fix: ${profile.habits?.length > 0 ? profile.habits.join(', ') : 'None selected'}
-- Preferred meals per day: ${profile.mealsPerDay || 'Not specified'}
 - Monthly food budget: ${profile.budget || 'Not specified'}
 - Current supplements: ${profile.supplements || 'None'}
+- Gym Time: ${profile.gymTime}
 - Additional notes: ${profile.notes || 'None'}
 
-CURRENT DIET (what they eat now):
-"${profile.currentDiet}"
+CURRENT DIET / MEAL SLOTS:
+Some slots show what they currently eat. Slots marked "[Currently not eating anything here — please suggest an optimal meal for this slot]" mean the user eats nothing there right now — you MUST suggest a real, practical meal for those slots. Do NOT leave them empty or skip them.
 
-Based on this, create a complete, optimised, realistic and practical Indian diet plan. The plan must be suitable for a gym beginner. 
+${profile.currentDiet}
+
+Create a complete, optimised, realistic and practical Indian diet plan based on the above. Keep meal times consistent with the gym schedule (gym at ${profile.gymTime}).
 
 Respond ONLY with a valid JSON object (no markdown, no backticks, no extra text) in this exact structure:
 {
@@ -48,10 +50,10 @@ Respond ONLY with a valid JSON object (no markdown, no backticks, no extra text)
       ]
     }
   ],
-  "coachNotes": "2-3 sentences of personal, motivating advice addressing their specific habits and goals. Direct and real — like talking to a friend with a great physique."
+  "coachNotes": "2-3 sentences of personal, motivating advice addressing their specific habits and goals. Direct and real — like talking to a friend."
 }
 
-Include ${profile.mealsPerDay || '4-5'} meals. Make food items Indian, affordable, accessible. Be specific with portions. Macros must add up correctly.`;
+Include exactly ${profile.mealsCount || '4-5'} meals matching the slots provided. Food items must be Indian, affordable, and accessible. Be specific with portions. Macros must add up correctly.`;
 
     const apiKey = process.env.GEMINI_API_KEY;
     

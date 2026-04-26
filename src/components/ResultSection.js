@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 export default function ResultSection({ plan, name, onRestart }) {
   const [animate, setAnimate] = useState(false);
@@ -23,6 +24,7 @@ export default function ResultSection({ plan, name, onRestart }) {
   return (
     <div id="result-section" style={{ display: 'block' }}>
       <div className="result-header">
+        <Image src="/logo.png" alt="Diet Bro Logo" width={56} height={56} style={{ marginBottom: '1.25rem', borderRadius: '10px' }} />
         <div className="result-tag">Your Personalised Blueprint</div>
         <div className="result-name">{name}&apos;s {plan.headline}</div>
       </div>

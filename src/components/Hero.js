@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 export default function Hero() {
   const scrollToApp = () => {
@@ -8,6 +9,7 @@ export default function Hero() {
   return (
     <section className="hero">
       <div className="hero-bg-text">GAINS</div>
+      <Image src="/logo.png" alt="Diet Bro Logo" width={80} height={80} style={{ marginBottom: '1.5rem', borderRadius: '16px', zIndex: 1 }} />
       <div className="hero-tag">no cap. built different. fr fr.</div>
       <h1>bro your diet is<br />actually <em>cooked.</em></h1>
       <p className="hero-sub">stop eating like a NPC and start fueling like a main character. drop what you eat, we fix it. no gatekeeping, just W gains.</p>

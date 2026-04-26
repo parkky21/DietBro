@@ -1,32 +1,90 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { formatTime } from '@/app/page';
+
+const PRE_OFFSET = 90;
+const POST_OFFSET = 90;
+const TIMELINE_START = 6 * 60;   // 6 AM
+const TIMELINE_END   = 23 * 60;  // 11 PM
+const GYM_DURATION   = 90;       // 1.5 hours
 
 const MEAL_SLOTS = [
-  { id: 'wakeup', icon: '🌅', name: 'Wake-up sip', time: '6:00 – 7:00 AM', placeholder: 'chai? black coffee? just vibes?' },
-  { id: 'breakfast', icon: '🍳', name: 'Breakfast', time: '7:00 – 9:00 AM', placeholder: 'eggs? paratha? or do u lowkey skip this 😬' },
-  { id: 'midMorning', icon: '🍌', name: 'mid-morning snack', time: '10:00 – 11:30 AM', placeholder: 'banana? biscuits? samosa? straight up nothing?' },
-  { id: 'lunch', icon: '🍱', name: 'lunch (the real one)', time: '12:00 – 2:00 PM', placeholder: 'rice + dal + sabzi? tiffin from mum? hotel food?' },
-  { id: 'preWorkout', icon: '💪', name: 'pre-workout fuel', time: '4:00 – 6:00 PM', placeholder: 'banana? peanut butter toast? or u just go in fasted 😤' },
-  { id: 'postWorkout', icon: '🥤', name: 'post-workout W meal', time: 'after the gym session', placeholder: 'whey shake? eggs? or nothing bc ur cooked after sets?' },
-  { id: 'eveningSnack', icon: '🫖', name: 'evening snack attack', time: '5:00 – 7:00 PM', placeholder: 'chai + biscuits? maggi? fruits? random chakna?' },
-  { id: 'dinner', icon: '🍽️', name: 'dinner (the big one)', time: '8:00 – 10:00 PM', placeholder: 'whatever mum made? roti + dal? chicken curry?' },
-  { id: 'bedtime', icon: '🌙', name: 'late night munchies', time: '10:00 PM+', placeholder: 'milk? random snacking? straight to bed?' },
+  { id: 'wakeup', icon: '🌅', name: 'Wake-up sip', staticTime: '6:00 – 7:00 AM', placeholder: 'chai? black coffee? just vibes?' },
+  { id: 'breakfast', icon: '🍳', name: 'Breakfast', staticTime: '7:00 – 9:00 AM', placeholder: 'eggs? paratha? or do u lowkey skip this 😬' },
+  { id: 'midMorning', icon: '🍌', name: 'mid-morning snack', staticTime: '10:00 – 11:30 AM', placeholder: 'banana? biscuits? samosa? straight up nothing?' },
+  { id: 'lunch', icon: '🍱', name: 'lunch (the real one)', staticTime: '12:00 – 2:00 PM', placeholder: 'rice + dal + sabzi? tiffin from mum? hotel food?' },
+  { id: 'preWorkout', icon: '💪', name: 'pre-workout fuel', isDynamicPre: true, placeholder: 'banana? peanut butter toast? or u just go in fasted 😤' },
+  { id: 'postWorkout', icon: '🥤', name: 'post-workout W meal', isDynamicPost: true, placeholder: 'whey shake? eggs? or nothing bc ur cooked after sets?' },
+  { id: 'eveningSnack', icon: '🫖', name: 'evening snack attack', staticTime: '5:00 – 7:00 PM', placeholder: 'chai + biscuits? maggi? fruits? random chakna?' },
+  { id: 'dinner', icon: '🍽️', name: 'dinner (the big one)', staticTime: '8:00 – 10:00 PM', placeholder: 'whatever mum made? roti + dal? chicken curry?' },
+  { id: 'bedtime', icon: '🌙', name: 'late night munchies', staticTime: '10:00 PM+', placeholder: 'milk? random snacking? straight to bed?' },
 ];
 
-export default function Step2Diet({ profile, setProfile, dietMeals, setDietMeals, skippedMeals, setSkippedMeals, onBack, onGenerate }) {
+export default function Step2Diet({ 
+  profile, setProfile, 
+  dietMeals, setDietMeals, 
+  skippedMeals, setSkippedMeals, 
+  gymStartMin, setGymStartMin,
+  onBack, onGenerate 
+}) {
   const [error, setError] = useState(false);
+  const trackRef = useRef(null);
+  const blockRef = useRef(null);
+  
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffsetPx, setDragOffsetPx] = useState(0);
 
-  const handleMealChange = (id, value) => {
-    setDietMeals(prev => ({ ...prev, [id]: value }));
+  const getMinFromPointerX = useCallback((clientX) => {
+    if (!trackRef.current) return gymStartMin;
+    const rect = trackRef.current.getBoundingClientRect();
+    const relX = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, relX / rect.width));
+    const raw = TIMELINE_START + pct * (TIMELINE_END - TIMELINE_START);
+    const snapped = Math.round(raw / 15) * 15;
+    return Math.max(TIMELINE_START, Math.min(TIMELINE_END - GYM_DURATION, snapped));
+  }, [gymStartMin]);
+
+  useEffect(() => {
+    const handlePointerMove = (e) => {
+      if (!isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const blockWidth = blockRef.current ? blockRef.current.offsetWidth : 60;
+      const adjustedX = clientX - dragOffsetPx + (blockWidth / 2);
+      setGymStartMin(getMinFromPointerX(adjustedX));
+    };
+    const handlePointerUp = () => setIsDragging(false);
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handlePointerMove);
+      document.addEventListener('touchmove', handlePointerMove, { passive: false });
+      document.addEventListener('mouseup', handlePointerUp);
+      document.addEventListener('touchend', handlePointerUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('touchmove', handlePointerMove);
+      document.removeEventListener('mouseup', handlePointerUp);
+      document.removeEventListener('touchend', handlePointerUp);
+    };
+  }, [isDragging, dragOffsetPx, getMinFromPointerX, setGymStartMin]);
+
+  const handleBlockPointerDown = (e) => {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const rect = blockRef.current.getBoundingClientRect();
+    setDragOffsetPx(clientX - rect.left);
+    setIsDragging(true);
   };
 
+  const handleTrackClick = (e) => {
+    if (blockRef.current && blockRef.current.contains(e.target)) return;
+    setGymStartMin(getMinFromPointerX(e.clientX));
+  };
+
+  const handleMealChange = (id, value) => setDietMeals(prev => ({ ...prev, [id]: value }));
   const toggleSkip = (id) => {
     setSkippedMeals(prev => {
       const newSkipped = new Set(prev);
-      if (newSkipped.has(id)) {
-        newSkipped.delete(id);
-      } else {
-        newSkipped.add(id);
-      }
+      if (newSkipped.has(id)) newSkipped.delete(id);
+      else newSkipped.add(id);
       return newSkipped;
     });
   };
@@ -34,25 +92,18 @@ export default function Step2Diet({ profile, setProfile, dietMeals, setDietMeals
   const toggleHabit = (habit) => {
     setProfile(prev => {
       const newHabits = prev.habits.includes(habit) 
-        ? prev.habits.filter(h => h !== habit)
-        : [...prev.habits, habit];
+        ? prev.habits.filter(h => h !== habit) : [...prev.habits, habit];
       return { ...prev, habits: newHabits };
     });
   };
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setProfile(prev => ({ ...prev, [id]: value }));
-  };
+  const handleInputChange = (e) => setProfile(prev => ({ ...prev, [e.target.id]: e.target.value }));
 
   const validateAndGenerate = () => {
     let filledCount = 0;
     MEAL_SLOTS.forEach(slot => {
-      if (!skippedMeals.has(slot.id) && dietMeals[slot.id]?.trim()) {
-        filledCount++;
-      }
+      if (!skippedMeals.has(slot.id)) filledCount++;
     });
-
     if (filledCount < 2) {
       setError(true);
       return;
@@ -61,15 +112,25 @@ export default function Step2Diet({ profile, setProfile, dietMeals, setDietMeals
     onGenerate();
   };
 
+  const totalRange = TIMELINE_END - TIMELINE_START;
+  const blockPct   = ((gymStartMin - TIMELINE_START) / totalRange) * 100;
+  const widthPct   = (GYM_DURATION / totalRange) * 100;
+  const prePct     = Math.max(0, ((gymStartMin - PRE_OFFSET - TIMELINE_START) / totalRange) * 100);
+  const postEndPct = Math.min(100, ((gymStartMin + GYM_DURATION + POST_OFFSET - TIMELINE_START) / totalRange) * 100);
+
   const renderMealSlot = (slot) => {
     const isSkipped = skippedMeals.has(slot.id);
+    let timeLabel = slot.staticTime;
+    if (slot.isDynamicPre) timeLabel = `~${formatTime(gymStartMin - PRE_OFFSET)}`;
+    if (slot.isDynamicPost) timeLabel = `~${formatTime(gymStartMin + POST_OFFSET)}`;
+
     return (
       <div key={slot.id} className={`meal-input-row ${isSkipped ? 'skipped' : ''}`}>
         <div className="meal-label-block">
           <span className="meal-icon">{slot.icon}</span>
           <div className="meal-label-text">
             <span className="meal-label-name">{slot.name}</span>
-            <span className="meal-label-time">{slot.time}</span>
+            <span className="meal-label-time">{timeLabel}</span>
           </div>
         </div>
         <input 
@@ -85,13 +146,58 @@ export default function Step2Diet({ profile, setProfile, dietMeals, setDietMeals
     );
   };
 
+  const hourLabels = [6, 8, 10, 12, 14, 16, 18, 20, 22];
+
   return (
     <div className="step active">
       <div className="card">
         <div className="card-title">ok fr, what are u actually eating rn? 👀</div>
-        <div className="card-subtitle">no judging bestie, just be honest — the more real u keep it, the harder we go on ur plan. be the main character.</div>
+        <div className="card-subtitle">
+          no judging bestie — type what u eat, type &quot;none&quot; if u skip that slot (we&apos;ll suggest something), or hit <strong style={{color:'var(--gold)'}}>nah skip</strong> to fully ignore a meal slot.
+        </div>
 
-        <div className="diet-section-label" style={{marginTop: '0.25rem'}}>morning grind 🌅</div>
+        <div className="gym-scheduler-wrap">
+          <div className="gym-scheduler-header">
+            <div className="gym-scheduler-title">🏋️ drag ur gym time on the timeline</div>
+          </div>
+
+          <div className="gym-hour-labels">
+            {hourLabels.map(h => {
+              const pct = ((h * 60 - TIMELINE_START) / totalRange) * 100;
+              return (
+                <div key={h} className="gym-hour-label" style={{ left: `${pct}%` }}>
+                  {h <= 12 ? `${h === 12 ? 12 : h}${h < 12 ? 'AM' : 'PM'}` : `${h-12}PM`}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="gym-timeline-outer">
+            <div className="gym-track-bg" ref={trackRef} onClick={handleTrackClick}>
+              <div className="gym-pre-zone" style={{ left: `${prePct}%`, width: `${blockPct - prePct}%` }}></div>
+              <div className="gym-post-zone" style={{ left: `${blockPct + widthPct}%`, width: `${postEndPct - (blockPct + widthPct)}%` }}></div>
+              <div 
+                className="gym-block" 
+                ref={blockRef}
+                style={{ left: `${blockPct}%`, width: `${widthPct}%` }}
+                onMouseDown={handleBlockPointerDown}
+                onTouchStart={handleBlockPointerDown}
+              >
+                <span className="gym-block-icon">🏋️</span>
+                <span className="gym-block-label">Gym</span>
+                <span className="gym-block-time">{formatTime(gymStartMin)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="gym-adj-info">
+            <span>Pre-workout meal: <strong>{formatTime(gymStartMin - PRE_OFFSET)}</strong></span>
+            <span>Gym start: <strong>{formatTime(gymStartMin)}</strong></span>
+            <span>Post-workout meal: <strong>{formatTime(gymStartMin + POST_OFFSET)}</strong></span>
+          </div>
+        </div>
+
+        <div className="diet-section-label" style={{marginTop:'0.25rem'}}>morning grind 🌅</div>
         <div className="meal-inputs-grid">
           {MEAL_SLOTS.slice(0, 2).map(renderMealSlot)}
         </div>

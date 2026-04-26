@@ -10,6 +10,15 @@ import Step2Diet from '@/components/Step2Diet';
 import Step3Loading from '@/components/Step3Loading';
 import ResultSection from '@/components/ResultSection';
 
+export function formatTime(totalMin) {
+  totalMin = Math.max(0, Math.min(1439, totalMin));
+  const h24 = Math.floor(totalMin / 60);
+  const m   = totalMin % 60;
+  const ampm = h24 >= 12 ? 'PM' : 'AM';
+  const h12  = h24 % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
   const [planResult, setPlanResult] = useState(null);
@@ -35,6 +44,7 @@ export default function Home() {
   // Global state for Step 2
   const [dietMeals, setDietMeals] = useState({});
   const [skippedMeals, setSkippedMeals] = useState(new Set());
+  const [gymStartMin, setGymStartMin] = useState(17 * 60); // Default 5:00 PM
 
   const handleNextToStep2 = () => {
     setCurrentStep(2);
@@ -51,32 +61,44 @@ export default function Home() {
     setLoadingError(null);
     document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
 
-    // Format current diet
+    const PRE_OFFSET = 90;
+    const POST_OFFSET = 90;
+
     const mealSlots = [
       { id: 'wakeup', label: 'Wake-up Drink', time: '~6:30 AM' },
       { id: 'breakfast', label: 'Breakfast', time: '~8:00 AM' },
       { id: 'midMorning', label: 'Mid-Morning', time: '~10:30 AM' },
       { id: 'lunch', label: 'Lunch', time: '~1:00 PM' },
-      { id: 'preWorkout', label: 'Pre-Workout', time: '~5:00 PM' },
-      { id: 'postWorkout', label: 'Post-Workout', time: 'After gym' },
+      { id: 'preWorkout', label: 'Pre-Workout', time: `~${formatTime(gymStartMin - PRE_OFFSET)}` },
+      { id: 'postWorkout', label: 'Post-Workout', time: `~${formatTime(gymStartMin + POST_OFFSET)}` },
       { id: 'eveningSnack', label: 'Evening Snack', time: '~6:30 PM' },
       { id: 'dinner', label: 'Dinner', time: '~9:00 PM' },
       { id: 'bedtime', label: 'Before Bed', time: '~10:30 PM' },
     ];
 
-    const filledMeals = mealSlots
-      .map(slot => {
-        const val = dietMeals[slot.id]?.trim();
-        const skipped = skippedMeals.has(slot.id);
-        if (skipped || !val) return null;
-        return `${slot.label} (${slot.time}): ${val}`;
-      })
-      .filter(Boolean);
+    let nonSkippedCount = 0;
+    const mealDescriptions = [];
+
+    mealSlots.forEach(slot => {
+      const isSkipped = skippedMeals.has(slot.id);
+      if (isSkipped) return;
+
+      nonSkippedCount++;
+      const val = (dietMeals[slot.id] || '').trim().toLowerCase();
+      const isEmpty = val === '' || val === 'none' || val === 'n/a' || val === 'nothing' || val === 'nope';
+
+      if (isEmpty) {
+        mealDescriptions.push(`${slot.label} (${slot.time}): [Currently not eating anything here — please suggest an optimal meal for this slot]`);
+      } else {
+        mealDescriptions.push(`${slot.label} (${slot.time}): ${dietMeals[slot.id].trim()}`);
+      }
+    });
 
     const completeProfile = {
       ...profile,
-      currentDiet: filledMeals.join('\\n'),
-      mealsPerDay: filledMeals.length,
+      gymTime: formatTime(gymStartMin),
+      currentDiet: mealDescriptions.join('\\n'),
+      mealsCount: nonSkippedCount,
     };
 
     try {
@@ -112,6 +134,7 @@ export default function Home() {
     });
     setDietMeals({});
     setSkippedMeals(new Set());
+    setGymStartMin(17 * 60);
     setCurrentStep(1);
     document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
   };
@@ -139,6 +162,8 @@ export default function Home() {
             setDietMeals={setDietMeals}
             skippedMeals={skippedMeals}
             setSkippedMeals={setSkippedMeals}
+            gymStartMin={gymStartMin}
+            setGymStartMin={setGymStartMin}
             onBack={handleBackToStep1}
             onGenerate={generatePlan}
           />
