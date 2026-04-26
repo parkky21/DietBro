@@ -161,31 +161,33 @@ export default function Step2Diet({
             <div className="gym-scheduler-title">🏋️ drag ur gym time on the timeline</div>
           </div>
 
-          <div className="gym-hour-labels">
-            {hourLabels.map(h => {
-              const pct = ((h * 60 - TIMELINE_START) / totalRange) * 100;
-              return (
-                <div key={h} className="gym-hour-label" style={{ left: `${pct}%` }}>
-                  {h <= 12 ? `${h === 12 ? 12 : h}${h < 12 ? 'AM' : 'PM'}` : `${h-12}PM`}
-                </div>
-              );
-            })}
-          </div>
+          <div className="gym-scroll-area">
+            <div className="gym-hour-labels">
+              {hourLabels.map(h => {
+                const pct = ((h * 60 - TIMELINE_START) / totalRange) * 100;
+                return (
+                  <div key={h} className="gym-hour-label" style={{ left: `${pct}%` }}>
+                    {h <= 12 ? `${h === 12 ? 12 : h}${h < 12 ? 'AM' : 'PM'}` : `${h-12}PM`}
+                  </div>
+                );
+              })}
+            </div>
 
-          <div className="gym-timeline-outer">
-            <div className="gym-track-bg" ref={trackRef} onClick={handleTrackClick}>
-              <div className="gym-pre-zone" style={{ left: `${prePct}%`, width: `${blockPct - prePct}%` }}></div>
-              <div className="gym-post-zone" style={{ left: `${blockPct + widthPct}%`, width: `${postEndPct - (blockPct + widthPct)}%` }}></div>
-              <div 
-                className="gym-block" 
-                ref={blockRef}
-                style={{ left: `${blockPct}%`, width: `${widthPct}%` }}
-                onMouseDown={handleBlockPointerDown}
-                onTouchStart={handleBlockPointerDown}
-              >
-                <span className="gym-block-icon">🏋️</span>
-                <span className="gym-block-label">Gym</span>
-                <span className="gym-block-time">{formatTime(gymStartMin)}</span>
+            <div className="gym-timeline-outer">
+              <div className="gym-track-bg" ref={trackRef} onClick={handleTrackClick}>
+                <div className="gym-pre-zone" style={{ left: `${prePct}%`, width: `${blockPct - prePct}%` }}></div>
+                <div className="gym-post-zone" style={{ left: `${blockPct + widthPct}%`, width: `${postEndPct - (blockPct + widthPct)}%` }}></div>
+                <div 
+                  className="gym-block" 
+                  ref={blockRef}
+                  style={{ left: `${blockPct}%`, width: `${widthPct}%` }}
+                  onMouseDown={handleBlockPointerDown}
+                  onTouchStart={handleBlockPointerDown}
+                >
+                  <span className="gym-block-icon">🏋️</span>
+                  <span className="gym-block-label">Gym</span>
+                  <span className="gym-block-time">{formatTime(gymStartMin)}</span>
+                </div>
               </div>
             </div>
           </div>
