@@ -1,66 +1,157 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState } from 'react';
+import Nav from '@/components/Nav';
+import Hero from '@/components/Hero';
+import ProcessStrip from '@/components/ProcessStrip';
+import StepIndicator from '@/components/StepIndicator';
+import Step1Profile from '@/components/Step1Profile';
+import Step2Diet from '@/components/Step2Diet';
+import Step3Loading from '@/components/Step3Loading';
+import ResultSection from '@/components/ResultSection';
 
 export default function Home() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [planResult, setPlanResult] = useState(null);
+  const [loadingError, setLoadingError] = useState(null);
+
+  // Global state for Step 1
+  const [profile, setProfile] = useState({
+    name: '',
+    age: '',
+    weight: '',
+    height: '',
+    sex: '',
+    activity: '',
+    goal: '',
+    dietType: '',
+    allergies: '',
+    habits: [],
+    budget: '',
+    supplements: '',
+    notes: '',
+  });
+
+  // Global state for Step 2
+  const [dietMeals, setDietMeals] = useState({});
+  const [skippedMeals, setSkippedMeals] = useState(new Set());
+
+  const handleNextToStep2 = () => {
+    setCurrentStep(2);
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleBackToStep1 = () => {
+    setCurrentStep(1);
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const generatePlan = async () => {
+    setCurrentStep(3);
+    setLoadingError(null);
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+
+    // Format current diet
+    const mealSlots = [
+      { id: 'wakeup', label: 'Wake-up Drink', time: '~6:30 AM' },
+      { id: 'breakfast', label: 'Breakfast', time: '~8:00 AM' },
+      { id: 'midMorning', label: 'Mid-Morning', time: '~10:30 AM' },
+      { id: 'lunch', label: 'Lunch', time: '~1:00 PM' },
+      { id: 'preWorkout', label: 'Pre-Workout', time: '~5:00 PM' },
+      { id: 'postWorkout', label: 'Post-Workout', time: 'After gym' },
+      { id: 'eveningSnack', label: 'Evening Snack', time: '~6:30 PM' },
+      { id: 'dinner', label: 'Dinner', time: '~9:00 PM' },
+      { id: 'bedtime', label: 'Before Bed', time: '~10:30 PM' },
+    ];
+
+    const filledMeals = mealSlots
+      .map(slot => {
+        const val = dietMeals[slot.id]?.trim();
+        const skipped = skippedMeals.has(slot.id);
+        if (skipped || !val) return null;
+        return `${slot.label} (${slot.time}): ${val}`;
+      })
+      .filter(Boolean);
+
+    const completeProfile = {
+      ...profile,
+      currentDiet: filledMeals.join('\\n'),
+      mealsPerDay: filledMeals.length,
+    };
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(completeProfile),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate plan. Please try again.');
+      }
+
+      const plan = await response.json();
+      
+      if (plan.error) {
+        throw new Error(plan.error);
+      }
+
+      setPlanResult(plan);
+      setCurrentStep(4); // Result view
+    } catch (err) {
+      console.error(err);
+      setLoadingError(err.message || 'Could not connect to the AI engine. Please try again.');
+    }
+  };
+
+  const handleRestart = () => {
+    setPlanResult(null);
+    setProfile({
+      name: '', age: '', weight: '', height: '', sex: '', activity: '',
+      goal: '', dietType: '', allergies: '', habits: [], budget: '', supplements: '', notes: '',
+    });
+    setDietMeals({});
+    setSkippedMeals(new Set());
+    setCurrentStep(1);
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <Nav />
+      <Hero />
+      <ProcessStrip />
+
+      <section id="app">
+        {currentStep < 4 && (
+          <StepIndicator currentStep={currentStep} />
+        )}
+
+        {currentStep === 1 && (
+          <Step1Profile profile={profile} setProfile={setProfile} onNext={handleNextToStep2} />
+        )}
+
+        {currentStep === 2 && (
+          <Step2Diet 
+            profile={profile} 
+            setProfile={setProfile}
+            dietMeals={dietMeals}
+            setDietMeals={setDietMeals}
+            skippedMeals={skippedMeals}
+            setSkippedMeals={setSkippedMeals}
+            onBack={handleBackToStep1}
+            onGenerate={generatePlan}
+          />
+        )}
+
+        {currentStep === 3 && (
+          <Step3Loading isError={loadingError} onRestart={handleRestart} />
+        )}
+
+        {currentStep === 4 && (
+          <ResultSection plan={planResult} name={profile.name} onRestart={handleRestart} />
+        )}
+      </section>
+    </>
   );
 }
