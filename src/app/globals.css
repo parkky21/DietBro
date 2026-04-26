@@ -6,6 +6,31 @@
   padding: 0;
 }
 
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('/fonts/WOFF2/IoskeleyMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('/fonts/WOFF2/IoskeleyMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('/fonts/WOFF2/IoskeleyMono-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Ioskeley Mono';
+  src: url('/fonts/WOFF2/IoskeleyMono-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+}
+
 :root {
   /* Change these RGB values to theme the entire app */
   --gold-rgb: 84, 107, 65;
@@ -22,6 +47,11 @@
   --bg: rgb(var(--bg-rgb));
   --text: rgb(var(--text-rgb));
   --red: rgb(var(--red-rgb));
+
+  /* Typography */
+  --font-dm-sans: 'Ioskeley Mono', monospace;
+  --font-cormorant: 'Ioskeley Mono', monospace;
+  --font-space-mono: 'Ioskeley Mono', monospace;
 
   /* Automatically Generated Variants */
   --gold-light: color-mix(in srgb, var(--gold) 60%, white);
@@ -82,9 +112,9 @@ nav {
 
 .logo {
   font-family: var(--font-cormorant), serif;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.10em;
   color: var(--gold);
   text-transform: uppercase;
 }
@@ -120,10 +150,10 @@ nav {
 .hero-bg-text {
   position: absolute;
   font-family: var(--font-cormorant), serif;
-  font-size: clamp(8rem, 20vw, 18rem);
+  font-size: clamp(5rem, 12vw, 11rem);
   font-weight: 700;
   color: rgba(var(--gold-rgb), 0.08);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   user-select: none;
   top: 50%;
   transform: translateY(-50%);
@@ -143,10 +173,10 @@ nav {
 
 .hero h1 {
   font-family: var(--font-cormorant), serif;
-  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-size: clamp(2rem, 5vw, 4.2rem);
   font-weight: 300;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
   opacity: 0;
   animation: fadeUp 0.8s ease 0.4s forwards;
   position: relative;
@@ -209,7 +239,7 @@ nav {
 
 .hero-stat-num {
   font-family: var(--font-cormorant), serif;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: var(--gold);
   line-height: 1;
