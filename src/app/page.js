@@ -174,7 +174,13 @@ export default function Home() {
         )}
 
         {currentStep === 4 && (
-          <ResultSection plan={planResult} name={profile.name} onRestart={handleRestart} />
+          <ResultSection 
+            plan={planResult} 
+            name={profile.name} 
+            profile={profile}
+            onRestart={handleRestart} 
+            onPlanUpdate={setPlanResult}
+          />
         )}
       </section>
     </>
