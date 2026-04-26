@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generateContentWithFallback } from '../../../lib/llm';
 
 export async function POST(req) {
   try {
@@ -36,9 +37,7 @@ Respond ONLY with a valid JSON object (no markdown, no backticks) in this exact 
   ]
 }`;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY && !process.env.OPENROUTER_API_KEY) {
       // Mock response for testing
       return NextResponse.json({
         time: meal.time,
@@ -55,25 +54,7 @@ Respond ONLY with a valid JSON object (no markdown, no backticks) in this exact 
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini Edit Error:', errorText);
-      throw new Error('Failed to regenerate meal');
-    }
-
-    const data = await response.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const rawText = await generateContentWithFallback(prompt);
     const clean = rawText.replace(/```json|```/g, '').trim();
     const updatedMeal = JSON.parse(clean);
 

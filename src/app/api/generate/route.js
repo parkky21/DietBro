@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generateContentWithFallback } from '../../../lib/llm';
 
 export async function POST(req) {
   try {
@@ -55,11 +56,9 @@ Respond ONLY with a valid JSON object (no markdown, no backticks, no extra text)
 
 Include exactly ${profile.mealsCount || '4-5'} meals matching the slots provided. Food items must be Indian, affordable, and accessible. Be specific with portions. Macros must add up correctly.`;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY && !process.env.GROQ_API_KEY && !process.env.OPENROUTER_API_KEY) {
       // For local testing without API key, return a mock response
-      console.warn("GEMINI_API_KEY is missing. Returning mock data.");
+      console.warn("No API keys found. Returning mock data.");
       return NextResponse.json({
         headline: "Time to build that dream physique",
         calories: 2500,
@@ -85,27 +84,7 @@ Include exactly ${profile.mealsCount || '4-5'} meals matching the slots provided
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini Error:', errorText);
-      throw new Error('Failed to generate plan from AI');
-    }
-
-    const data = await response.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const rawText = await generateContentWithFallback(prompt);
     
     // Attempt to parse JSON safely
     const clean = rawText.replace(/```json|```/g, '').trim();
