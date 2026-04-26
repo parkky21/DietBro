@@ -53,11 +53,11 @@ Respond ONLY with a valid JSON object (no markdown, no backticks, no extra text)
 
 Include ${profile.mealsPerDay || '4-5'} meals. Make food items Indian, affordable, accessible. Be specific with portions. Macros must add up correctly.`;
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     
     if (!apiKey) {
       // For local testing without API key, return a mock response
-      console.warn("ANTHROPIC_API_KEY is missing. Returning mock data.");
+      console.warn("GEMINI_API_KEY is missing. Returning mock data.");
       return NextResponse.json({
         headline: "Time to build that dream physique",
         calories: 2500,
@@ -83,28 +83,27 @@ Include ${profile.mealsPerDay || '4-5'} meals. Make food items Indian, affordabl
       });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Anthropic Error:', errorText);
+      console.error('Gemini Error:', errorText);
       throw new Error('Failed to generate plan from AI');
     }
 
     const data = await response.json();
-    const rawText = data.content.map(i => i.text || '').join('');
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     
     // Attempt to parse JSON safely
     const clean = rawText.replace(/```json|```/g, '').trim();
