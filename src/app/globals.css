@@ -1117,6 +1117,10 @@ textarea {
     padding: 1rem 1.5rem;
   }
 
+  .nav-badge {
+    display: none;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
