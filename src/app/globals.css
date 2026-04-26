@@ -53,13 +53,13 @@
   --font-cormorant: 'Ioskeley Mono', monospace;
   --font-space-mono: 'Ioskeley Mono', monospace;
 
-  /* Automatically Generated Variants */
-  --gold-light: color-mix(in srgb, var(--gold) 60%, white);
-  --gold-dim: color-mix(in srgb, var(--gold) 70%, black);
+  /* Automatically Generated Variants (Hardcoded for compatibility with html2pdf) */
+  --gold-light: rgb(152, 166, 141);
+  --gold-dim: rgb(59, 75, 46);
 
-  --bg-2: color-mix(in srgb, var(--bg) 40%, white);
+  --bg-2: rgb(255, 252, 247);
   --bg-3: #FFFFFF;
-  --bg-4: color-mix(in srgb, var(--bg) 80%, var(--gold));
+  --bg-4: rgb(221, 220, 202);
 
   --text-muted: rgba(var(--text-rgb), 0.75);
   --text-dim: rgba(var(--text-rgb), 0.5);
@@ -613,11 +613,12 @@ textarea {
 }
 
 .result-header {
-  text-align: center;
-  padding: 3rem 2rem 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
   position: relative;
+  gap: 2rem;
 }
 
 .result-header::before {
@@ -641,7 +642,7 @@ textarea {
   font-family: var(--font-cormorant), serif;
   font-size: 2.8rem;
   font-weight: 300;
-  line-height: 1.1;
+  line-height: 1.25;
 }
 
 /* ── MACRO BAR ── */
@@ -1147,6 +1148,21 @@ textarea {
     align-items: center;
     gap: 1.5rem;
     width: 100%;
+  }
+
+  .result-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .result-name {
+    font-size: 2.2rem;
+    line-height: 1.2;
+    word-break: break-word;
   }
 
   .hero-divider {
@@ -1773,4 +1789,35 @@ textarea {
   .sus-btn {
     min-width: unset;
   }
+}
+/* ── PRINT & PDF STYLES ── */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: #FFFAF1 !important;
+    color: #4A5D3B !important;
+  }
+
+  .card {
+    border: 1px solid rgba(84, 107, 65, 0.2) !important;
+    background: #FFFFFF !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .meal-card {
+    break-inside: avoid;
+    margin-bottom: 2rem !important;
+  }
+}
+
+.pdf-hidden {
+  display: none !important;
+}
+
+.is-pdf-generating .no-print {
+  display: none !important;
 }
